@@ -1,6 +1,7 @@
 Windows only
 
 Requirements python
+
 Required dependencies (run in cmd): pip install keyboard pillow
 
 How to use:
