@@ -51,7 +51,7 @@ while True:
     if running:
         # Click
         send_click()
-        time.sleep(0.5)
+        time.sleep(1)
 
         # Check color
         color = get_pixel_color(CHECK_POS[0], CHECK_POS[1])
