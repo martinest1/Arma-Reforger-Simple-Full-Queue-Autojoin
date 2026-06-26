@@ -29,8 +29,8 @@ def get_pixel_color(x, y):
     return ImageGrab.grab().getpixel((x, y))
 
 running = False
-TARGET_COLOR = (249, 66, 66)
-CHECK_POS = (580, 439)
+TARGET_COLOR = (87, 87, 87)
+CHECK_POS = (464, 340)
 
 def start():
     global running
