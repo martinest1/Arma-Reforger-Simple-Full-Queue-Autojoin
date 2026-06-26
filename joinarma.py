@@ -1,7 +1,11 @@
 import time
 import ctypes
+import ctypes.wintypes
 import keyboard
-from PIL import ImageGrab
+import mss
+
+# DPI aware so coordinates match at any display scaling (required for borderless)
+ctypes.windll.shcore.SetProcessDpiAwareness(2)
 
 INPUT_MOUSE = 0
 MOUSEEVENTF_LEFTDOWN = 0x0002
@@ -22,15 +26,17 @@ def send_click():
     time.sleep(0.05)
     ctypes.windll.user32.SendInput(1, ctypes.byref(inp_up), ctypes.sizeof(INPUT))
 
-def color_in_range(c1, c2, tolerance=3):
+def color_in_range(c1, c2, tolerance=10):
     return all(abs(a - b) <= tolerance for a, b in zip(c1, c2))
 
 def get_pixel_color(x, y):
-    return ImageGrab.grab().getpixel((x, y))
+    with mss.mss() as sct:
+        img = sct.grab({"left": x, "top": y, "width": 1, "height": 1})
+        return img.pixel(0, 0)[:3]  # (R, G, B) — works with GPU-accelerated/borderless windows
 
 running = False
-TARGET_COLOR = (87, 87, 87)
-CHECK_POS = (464, 340)
+TARGET_COLOR = (249, 66, 66)
+CHECK_POS    = (580, 435)
 
 def start():
     global running
@@ -44,16 +50,18 @@ def stop():
 
 keyboard.add_hotkey("f6", start)
 keyboard.add_hotkey("f4", stop)
-
 print("F6 = Start | F4 = Stop")
 
 while True:
     if running:
         # Click
         send_click()
-        time.sleep(1.2)
+        time.sleep(1)
 
-        # Check color
+        # Small extra delay so the frame has fully rendered before capture
+        time.sleep(0.2)
+
+        # Check color using mss (works with Arma Reforger borderless)
         color = get_pixel_color(CHECK_POS[0], CHECK_POS[1])
         if not color_in_range(color, TARGET_COLOR):
             print(f"Color mismatch: {color} — stopping.")
@@ -64,7 +72,6 @@ while True:
         keyboard.press("esc")
         time.sleep(2)
         keyboard.release("esc")
-
         time.sleep(0.5)
     else:
         time.sleep(0.1)
